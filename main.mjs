@@ -43,11 +43,20 @@ client.once(Events.ClientReady, async () => {
 
     console.log(`ログインしました: ${client.user.tag}`);
 
-    const channels = await client.channels.fetch();
+    const guilds = client.guilds.cache;
 
-    const channel = channels.find(
-        ch => ch?.name === "🏭｜工場利用"
-    );
+    let channel = null;
+
+    for (const guild of guilds.values()) {
+
+        const channels = await guild.channels.fetch();
+
+        channel = channels.find(
+            ch => ch?.name === "🏭｜工場利用"
+        );
+
+        if (channel) break;
+    }
 
     if (!channel) return;
 
@@ -73,10 +82,6 @@ client.once(Events.ClientReady, async () => {
         });
     }
 
-    await channel.send({
-        content: "🏭 工場利用申請\nボタンから申請してください。",
-        components: [row]
-    });
 });
 
 // -----------------------------
