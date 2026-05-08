@@ -12,12 +12,28 @@ import {
 } from "discord.js";
 
 import dotenv from "dotenv";
+import express from "express";
 dotenv.config();
 
 const TOKEN = process.env.TOKEN;
 
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds]
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages
+    ]
+});
+
+const app = express();
+
+const PORT = process.env.PORT || 3000;
+
+app.get("/", (req, res) => {
+    res.send("Bot is running!");
+});
+
+app.listen(PORT, () => {
+    console.log(`Web server running on port ${PORT}`);
 });
 
 // -----------------------------
@@ -27,8 +43,10 @@ client.once(Events.ClientReady, async () => {
 
     console.log(`ログインしました: ${client.user.tag}`);
 
-    const channel = client.channels.cache.find(
-        ch => ch.name === "🏭｜工場利用"
+    const channels = await client.channels.fetch();
+
+    const channel = channels.find(
+        ch => ch?.name === "🏭｜工場利用"
     );
 
     if (!channel) return;
@@ -40,6 +58,20 @@ client.once(Events.ClientReady, async () => {
         .setEmoji("🏭");
 
     const row = new ActionRowBuilder().addComponents(button);
+
+    const messages = await channel.messages.fetch({ limit: 10 });
+
+    const exists = messages.some(msg =>
+        msg.author.id === client.user.id &&
+        msg.content.includes("🏭 工場利用申請")
+    );
+
+    if (!exists) {
+        await channel.send({
+            content: "🏭 工場利用申請\nボタンから申請してください。",
+            components: [row]
+        });
+    }
 
     await channel.send({
         content: "🏭 工場利用申請\nボタンから申請してください。",
@@ -138,8 +170,10 @@ client.on(Events.InteractionCreate, async interaction => {
                 return;
             }
 
-            const channel = interaction.guild.channels.cache.find(
-                ch => ch.name === "🗓️｜利用予定"
+            const channels = await interaction.guild.channels.fetch();
+
+            const channel = channels.find(
+                ch => ch?.name === "🗓️｜利用予定"
             );
 
             if (!channel) {
