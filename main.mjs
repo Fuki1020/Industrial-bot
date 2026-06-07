@@ -64,7 +64,7 @@ client.once(Events.ClientReady, async () => {
         .setCustomId("open_form")
         .setLabel("申請する")
         .setStyle(ButtonStyle.Success)
-        .setEmoji("🏭");
+        //.setEmoji("🏭");
 
     const row = new ActionRowBuilder().addComponents(button);
 
